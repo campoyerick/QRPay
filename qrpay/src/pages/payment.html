@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento QR Code</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .card {
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: white;
+            margin: 1rem;
+            width: 100%;
+            max-width: 400px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .toggle-group {
+            display: flex;
+            justify-content: center;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 0.25rem;
+            margin-bottom: 1.5rem;
+            background-color: #f8f9fa;
+        }
+
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            font-weight: 500;
+        }
+
+        .toggle-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .toggle-item.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .payment-details {
+            margin-top: 1.5rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.75rem 0;
+            font-size: 0.875rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .payment-type {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            color: #007bff;
+        }
+
+        .label {
+            color: #666;
+        }
+
+        .value {
+            color: #333;
+            font-weight: 500;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsividade */
+        @media (max-width: 480px) {
+            .card {
+                margin: 0.5rem;
+                padding: 1rem;
+            }
+
+            .toggle-item {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="toggle-group">
+            <div class="toggle-item active" data-payment="crypto">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+                    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+                    <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+                </svg>
+                <span>Criptomoedas</span>
+            </div>
+            <div class="toggle-item" data-payment="pix">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3h18v18H3z"/>
+                    <path d="M21 8H3M8 21V8"/>
+                </svg>
+                <span>PIX</span>
+            </div>
+        </div>
+
+        <div id="paymentDetails" class="payment-details">
+            <!-- O conteúdo será preenchido via JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const paymentDetails = document.getElementById('paymentDetails');
+            const toggleItems = document.querySelectorAll('.toggle-item');
+
+            const paymentData = {
+                crypto: {
+                    title: 'Ethereum (ERC20)',
+                    icon: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+                            <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+                            <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+                          </svg>`,
+                    details: [
+                        { label: 'Depósito Mínimo', value: '0.00000009 ETH' },
+                        { label: 'Confirmações Necessárias', value: '12' }
+                    ]
+                },
+                pix: {
+                    title: 'PIX',
+                    icon: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 3h18v18H3z"/>
+                            <path d="M21 8H3M8 21V8"/>
+                          </svg>`,
+                    details: [
+                        { label: 'Valor Mínimo', value: 'R$ 1,00' },
+                        { label: 'Tempo de Processamento', value: 'Instantâneo' }
+                    ]
+                }
+            };
+
+            function updatePaymentDetails(paymentType) {
+                const payment = paymentData[paymentType];
+                const html = `
+                    <div class="payment-type">
+                        ${payment.icon}
+                        <span>${payment.title}</span>
+                    </div>
+                    ${payment.details.map(detail => `
+                        <div class="detail-row">
+                            <span class="label">${detail.label}</span>
+                            <span class="value">${detail.value}</span>
+                        </div>
+                    `).join('')}
+                `;
+                
+                paymentDetails.innerHTML = html;
+                paymentDetails.style.opacity = '0';
+                setTimeout(() => {
+                    paymentDetails.style.opacity = '1';
+                }, 50);
+            }
+
+            toggleItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Remove active class from all items
+                    toggleItems.forEach(i => i.classList.remove('active'));
+                    // Add active class to clicked item
+                    this.classList.add('active');
+                    // Update payment details
+                    updatePaymentDetails(this.dataset.payment);
+                });
+            });
+
+            // Initialize with crypto payment details
+            updatePaymentDetails('crypto');
+        });
+    </script>
+</body>
+</html>
